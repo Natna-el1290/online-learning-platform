@@ -1,15 +1,10 @@
-// prisma.ts (or lib/prisma.ts)
+import "dotenv/config";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/lib/generated/prisma/client";
 
-const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClient | undefined;
-};
+const connectionString = `${process.env.DATABASE_URL}`;
 
-// Use empty options object → fixes the TS error in many Prisma 7 setups
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({});
+const adapter = new PrismaPg({ connectionString });
+const prisma = new PrismaClient({ adapter });
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
-
-export default prisma;
+export { prisma };

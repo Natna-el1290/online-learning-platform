@@ -1,12 +1,11 @@
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-
 import GoogleProvider from "next-auth/providers/google";
 import GitHubProvider from "next-auth/providers/github";
 import CredentialsProvider from "next-auth/providers/credentials";
 // import prisma from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { AuthOptions } from "next-auth";
-import prisma from "./prisma";
+import prisma from "@/lib/prisma";
 import { Type } from "lucide-react";
 // import prisma ("@prisma/client.ts");
 

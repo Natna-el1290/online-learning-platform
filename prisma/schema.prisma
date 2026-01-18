@@ -1,13 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
-
-
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client"
   output   = "../lib/generated/prisma"
 }
 
@@ -15,57 +7,40 @@ datasource db {
   provider = "postgresql"
 }
 
-enum UserRole {
-  STUDENT
-  ADMIN
-}
-
-enum ContentType {
-  VIDEO
-  PDF
-}
-
-// --- AUTHENTICATION MODELS ---
 
 model User {
-  id            String    @id @default(cuid())
+  id            String        @id @default(cuid())
   firstName     String?
   lastName      String?
-  email         String    @unique
-  emailVerified DateTime? // Needed for social login providers
-  password      String?   // Optional because social users don't have a password
-  image         String?   
-  bio           String?   @db.Text
-  role          UserRole  @default(STUDENT)
-  
-  // Auth Relations
+  email         String        @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  bio           String?
+  role          UserRole      @default(STUDENT)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
   accounts      Account[]
-  sessions      Session[]
-  
-  // App Relations
+  certificates  Certificate[]
   enrollments   Enrollment[]
   quizResults   QuizResult[]
-  certificates  Certificate[]
-  
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
 }
 
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?  @db.Text
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
 }
@@ -78,99 +53,96 @@ model Session {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// --- CORE APP MODELS ---
-
 model Course {
-  id          String    @id @default(cuid())
+  id          String       @id @default(cuid())
   title       String
-  description String    @db.Text
-  image       String?   
-  category    String    
-  level       String    @default("Beginner")
+  description String
+  image       String?
+  category    String
+  level       String       @default("Beginner")
   instructor  String
-  duration    String    
-  
+  duration    String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  enrollments Enrollment[]
   lessons     Lesson[]
   quizzes     Quiz[]
-  enrollments Enrollment[]
-
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
 }
 
 model Lesson {
-  id          String      @id @default(cuid())
-  title       String
-  duration    String
-  type        ContentType @default(VIDEO)
-  content     String?     @db.Text 
-  videoUrl    String?
-  pdfUrl      String?
-  
-  courseId    String
-  course      Course      @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  progress    LessonProgress[]
-
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id        String           @id @default(cuid())
+  title     String
+  duration  String
+  type      ContentType      @default(VIDEO)
+  content   String?
+  videoUrl  String?
+  pdfUrl    String?
+  courseId  String
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  course    Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress  LessonProgress[]
 }
 
 model Quiz {
-  id             String    @id @default(cuid())
+  id             String       @id @default(cuid())
   title          String
   totalQuestions Int
-  
   courseId       String
-  course         Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  course         Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
   results        QuizResult[]
-
-  createdAt      DateTime  @default(now())
 }
 
 model Enrollment {
   id               String   @id @default(cuid())
   userId           String
   courseId         String
-  progressPercent  Int      @default(0) 
+  progressPercent  Int      @default(0)
   completedLessons Int      @default(0)
   lastAccessed     DateTime @default(now())
-
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   course           Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, courseId])
 }
 
 model LessonProgress {
-  id        String   @id @default(cuid())
+  id        String  @id @default(cuid())
   userId    String
   lessonId  String
-  completed Boolean  @default(false)
-
-  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completed Boolean @default(false)
+  lesson    Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@unique([userId, lessonId])
 }
 
 model QuizResult {
-  id        String   @id @default(cuid())
-  score     Int
-  userId    String
-  quizId    String
-  date      DateTime @default(now())
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  id     String   @id @default(cuid())
+  score  Int
+  userId String
+  quizId String
+  date   DateTime @default(now())
+  quiz   Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Certificate {
   id             String   @id @default(cuid())
-  certificateId  String   @unique 
+  certificateId  String   @unique
   completionDate DateTime @default(now())
-  
   userId         String
+  courseTitle    String
+  instructorName String
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  courseTitle    String   
-  instructorName String   
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
+enum ContentType {
+  VIDEO
+  PDF
 }
