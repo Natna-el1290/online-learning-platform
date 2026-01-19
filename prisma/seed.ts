@@ -8,6 +8,7 @@ async function main() {
   const adminHash = await bcrypt.hash("Adminpassword123!", 10);
   const student1Hash = await bcrypt.hash("Johnpassword123", 10);
   const student2Hash = await bcrypt.hash("Janepassword123", 10);
+  const student3Hash = await bcrypt.hash("Markpassword123", 10);
 
   // 1. Create System Admin (Mulusewu)
   const admin = await prisma.user.upsert({
@@ -47,6 +48,18 @@ async function main() {
       role: "STUDENT",
     },
   });
+  // 4. Create Student 3 (Mark)
+  const student3 = await prisma.user.upsert({
+    where: { email: "student3@example.com" },
+    update: {},
+    create: {
+      email: "student3@example.com",
+      firstName: "Mark",
+      lastName: "Henry",
+      password: student3Hash,
+      role: "STUDENT",
+    },
+  });
 
   console.log("Seed successful!");
   console.table([
@@ -55,8 +68,9 @@ async function main() {
       email: admin.email,
       password: "AdminSecret2026!",
     },
-    { name: "John (Student)", email: student1.email, password: "JohnPass123" },
-    { name: "Jane (Student)", email: student2.email, password: "JanePass456" },
+    { name: "John (Student)", email: student1.email, password: "JohnPassword123" },
+    { name: "Jane (Student)", email: student2.email, password: "JanePassword123" },
+    { name: "Mark (Student)", email: student3.email, password: "MarkPassword123" },
   ]);
 }
 
