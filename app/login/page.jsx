@@ -32,7 +32,7 @@ export default function LoginPage() {
     });
 
     if (result?.error) {
-      alert("Invalid credentials!");
+      // alert("Invalid credentials!");
     } else {
       router.push("/student-dashboard"); // Or check role to redirect differently
     }
@@ -57,6 +57,7 @@ export default function LoginPage() {
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
+              onChange={(e) => setEmail(e.target.value)}
               id="email"
               type="email"
               placeholder="name@example.com"
@@ -75,13 +76,17 @@ export default function LoginPage() {
               </Link>
             </div>
             <Input
+              onChange={(e) => setPassword(e.target.value)}
               id="password"
               type="password"
               required
               className="border-slate-200 focus-visible:ring-indigo-500"
             />
           </div>
-          <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition-all">
+          <Button
+            onClick={handleCredentialsLogin}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition-all"
+          >
             Sign In
           </Button>
           <div className="relative">

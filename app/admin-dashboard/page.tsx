@@ -1,8 +1,19 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { AdminSidebar } from "@/components/admin-sidebar"
-import { BookOpen, Users, FileText, HelpCircle } from "lucide-react"
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function AdminDashboard() {
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AdminSidebar } from "@/components/admin-sidebar";
+import { BookOpen, Users, FileText, HelpCircle } from "lucide-react";
+
+export default async function AdminDashboard() {
+  const session = await getServerSession(authOptions);
+  console.log("Admin Dashboard Session:", session);
+
+  // If no session or user is not admin, redirect
+  if (!session || session.user.role !== "ADMIN") {
+    redirect("/login"); // or "/student-dashboard"
+  }
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
@@ -11,52 +22,70 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto space-y-8">
           <div>
             <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage your e-learning platform</p>
+            <p className="text-muted-foreground">
+              Manage your e-learning platform
+            </p>
           </div>
 
           {/* Stats Cards */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Total Courses</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Courses
+                </CardTitle>
                 <BookOpen className="w-4 h-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">24</div>
-                <p className="text-xs text-muted-foreground">+2 from last month</p>
+                <p className="text-xs text-muted-foreground">
+                  +2 from last month
+                </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Students
+                </CardTitle>
                 <Users className="w-4 h-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">1,234</div>
-                <p className="text-xs text-muted-foreground">+180 from last month</p>
+                <p className="text-xs text-muted-foreground">
+                  +180 from last month
+                </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Total Lessons</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Lessons
+                </CardTitle>
                 <FileText className="w-4 h-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">456</div>
-                <p className="text-xs text-muted-foreground">+32 from last month</p>
+                <p className="text-xs text-muted-foreground">
+                  +32 from last month
+                </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Total Quizzes</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Total Quizzes
+                </CardTitle>
                 <HelpCircle className="w-4 h-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">89</div>
-                <p className="text-xs text-muted-foreground">+12 from last month</p>
+                <p className="text-xs text-muted-foreground">
+                  +12 from last month
+                </p>
               </CardContent>
             </Card>
           </div>
@@ -74,9 +103,13 @@ export default function AdminDashboard() {
                   </div>
                   <div className="flex-1">
                     <p className="font-medium">New student registered</p>
-                    <p className="text-sm text-muted-foreground">John Doe joined the platform</p>
+                    <p className="text-sm text-muted-foreground">
+                      John Doe joined the platform
+                    </p>
                   </div>
-                  <span className="text-sm text-muted-foreground">2 hours ago</span>
+                  <span className="text-sm text-muted-foreground">
+                    2 hours ago
+                  </span>
                 </div>
 
                 <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
@@ -85,9 +118,13 @@ export default function AdminDashboard() {
                   </div>
                   <div className="flex-1">
                     <p className="font-medium">Course updated</p>
-                    <p className="text-sm text-muted-foreground">Web Development Fundamentals was updated</p>
+                    <p className="text-sm text-muted-foreground">
+                      Web Development Fundamentals was updated
+                    </p>
                   </div>
-                  <span className="text-sm text-muted-foreground">5 hours ago</span>
+                  <span className="text-sm text-muted-foreground">
+                    5 hours ago
+                  </span>
                 </div>
 
                 <div className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
@@ -96,9 +133,13 @@ export default function AdminDashboard() {
                   </div>
                   <div className="flex-1">
                     <p className="font-medium">New lesson added</p>
-                    <p className="text-sm text-muted-foreground">Advanced JavaScript Concepts added to course</p>
+                    <p className="text-sm text-muted-foreground">
+                      Advanced JavaScript Concepts added to course
+                    </p>
                   </div>
-                  <span className="text-sm text-muted-foreground">1 day ago</span>
+                  <span className="text-sm text-muted-foreground">
+                    1 day ago
+                  </span>
                 </div>
               </div>
             </CardContent>
@@ -106,5 +147,5 @@ export default function AdminDashboard() {
         </div>
       </main>
     </div>
-  )
+  );
 }

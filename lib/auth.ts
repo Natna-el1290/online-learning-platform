@@ -6,7 +6,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { AuthOptions } from "next-auth";
 import prisma from "@/lib/prisma";
-import { Type } from "lucide-react";
+// removed unused import
 // import prisma ("@prisma/client.ts");
 
 export const authOptions: AuthOptions = {
@@ -38,7 +38,14 @@ export const authOptions: AuthOptions = {
           credentials.password,
           user.password,
         );
-        return isValid ? user : null;
+        return isValid
+          ? {
+              id: user.id,
+              email: user.email,
+              name: user.firstName + " " + user.lastName,
+              role: user.role,
+            }
+          : null;
       },
     }),
   ],

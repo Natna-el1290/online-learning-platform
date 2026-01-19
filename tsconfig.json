@@ -28,6 +28,7 @@
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    // "lib/generated/prisma/**/*.ts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "prisma.config.ts.back"
