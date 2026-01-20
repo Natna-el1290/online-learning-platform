@@ -17,6 +17,7 @@ model User {
   image         String?
   bio           String?
   role          UserRole      @default(STUDENT)
+  
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   accounts      Account[]
@@ -144,4 +145,7 @@ enum UserRole {
 enum ContentType {
   VIDEO
   PDF
+  PPTX
+  IMAGE
 }
+

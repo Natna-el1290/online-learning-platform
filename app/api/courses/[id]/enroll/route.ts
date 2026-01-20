@@ -1,19 +1,27 @@
-import prisma from "@prisma/client";
+import prisma from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { NextResponse } from "next/server";
 
 export async function POST(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id } = await params;
   const session = await getServerSession(authOptions);
   if (!session) return new NextResponse("Unauthorized", { status: 401 });
 
-  const enrollment = await prisma.enrollment.create({
-    data: {
+  const enrollment = await prisma.enrollment.upsert({
+    where: {
+      userId_courseId: {
+        userId: session.user.id,
+        courseId: id,
+      },
+    },
+    update: {},
+    create: {
       userId: session.user.id,
-      courseId: params.id,
+      courseId: id,
       progressPercent: 0,
     },
   });

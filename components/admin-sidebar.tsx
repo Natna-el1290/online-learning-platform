@@ -2,7 +2,8 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BookOpen, FileText, HelpCircle, Users, LayoutDashboard } from "lucide-react"
+import { BookOpen, FileText, HelpCircle, Users, LayoutDashboard, LogOut } from "lucide-react"
+import { signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
 
 const navigation = [
@@ -17,8 +18,8 @@ export function AdminSidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="w-64 border-r bg-card/50 h-screen sticky top-0 hidden md:block">
-      <div className="p-6">
+    <aside className="w-64 border-r bg-card/50 h-screen sticky top-0 hidden md:flex md:flex-col">
+      <div className="p-6 flex-1">
         <Link href="/" className="flex items-center gap-2 font-semibold text-xl mb-8">
           <div className="bg-primary text-primary-foreground p-2 rounded-lg">
             <BookOpen className="w-5 h-5" />
@@ -47,6 +48,16 @@ export function AdminSidebar() {
             )
           })}
         </nav>
+      </div>
+
+      <div className="p-6 border-t">
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors w-full"
+        >
+          <LogOut className="w-5 h-5" />
+          <span>Logout</span>
+        </button>
       </div>
     </aside>
   )

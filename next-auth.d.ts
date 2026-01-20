@@ -1,10 +1,13 @@
 import { DefaultSession, DefaultUser } from "next-auth";
-import { JWT } from "next-auth/jwt";
+import { JWT as DefaultJWT } from "next-auth/jwt";
 
-// Use "next-auth" to extend the core User and Session interfaces
+/**
+ * next-auth module augmentation
+ */
 declare module "next-auth" {
   interface Session {
     user: {
+      /** Database user id */
       id: string;
       role: "STUDENT" | "ADMIN";
       firstName?: string;
@@ -19,9 +22,12 @@ declare module "next-auth" {
   }
 }
 
-// Use "next-auth/jwt" to extend the JWT interface used in callbacks
+/**
+ * JWT module augmentation
+ */
 declare module "next-auth/jwt" {
-  interface JWT {
+  interface JWT extends DefaultJWT {
+    /** Database user id */
     id: string;
     role: "STUDENT" | "ADMIN";
   }

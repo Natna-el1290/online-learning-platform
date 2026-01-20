@@ -12,7 +12,10 @@ async function main() {
   // 1. Create System Admin (Mulusewu)
   const admin = await prisma.user.upsert({
     where: { email: "mulusewu@skillhub.com" },
-    update: {},
+    update: {
+      password: adminHash,
+      role: "ADMIN",
+    },
     create: {
       email: "mulusewu@skillhub.com",
       firstName: "Mulusewu",
@@ -53,10 +56,10 @@ async function main() {
     {
       name: "Mulusewu (Admin)",
       email: admin.email,
-      password: "AdminSecret2026!",
+      password: "Adminpassword123!",
     },
-    { name: "John (Student)", email: student1.email, password: "JohnPass123" },
-    { name: "Jane (Student)", email: student2.email, password: "JanePass456" },
+    { name: "John (Student)", email: student1.email, password: "Johnpassword123" },
+    { name: "Jane (Student)", email: student2.email, password: "Janepassword123" },
   ]);
 }
 
