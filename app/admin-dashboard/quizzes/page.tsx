@@ -41,9 +41,7 @@ export default async function AdminQuizzesPage() {
               Create and manage course assessments
             </p>
           </div>
-          <AddQuizDialog
-            courses={allCourses}
-          />
+          <AddQuizDialog courses={allCourses} />
         </div>
 
         <Card>
@@ -64,9 +62,7 @@ export default async function AdminQuizzesPage() {
               <TableBody>
                 {quizzes.map((quiz) => (
                   <TableRow key={quiz.id}>
-                    <TableCell className="font-medium">
-                      {quiz.title}
-                    </TableCell>
+                    <TableCell className="font-medium">{quiz.title}</TableCell>
                     <TableCell>{quiz.course?.title}</TableCell>
                     <TableCell>{quiz.totalQuestions}</TableCell>
                     <TableCell className="text-right">

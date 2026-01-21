@@ -12,10 +12,38 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const session = await getServerSession(authOptions);
-  if (session?.user.role !== "ADMIN")
+  if (session?.user.role !== "ADMIN") {
     return new NextResponse("Unauthorized", { status: 403 });
+  }
 
-  const body = await req.json();
-  const course = await prisma.course.create({ data: body });
-  return NextResponse.json(course);
+  try {
+    const body = await req.json();
+
+    // Normalize level to match Prisma enum casing
+    const validLevels = ["BEGINNER", "INTERMEDIATE", "ADVANCED"];
+    let normalizedLevel = body.level?.toUpperCase().trim();
+
+    if (body.level && !validLevels.includes(normalizedLevel)) {
+      return NextResponse.json(
+        {
+          error: `Invalid level value: "${body.level}". Must be one of: Beginner, Intermediate, Advanced`,
+        },
+        { status: 400 },
+      );
+    }
+
+    const course = await prisma.course.create({
+      data: {
+        ...body,
+        level: normalizedLevel || "BEGINNER", // fallback if missing
+      },
+    });
+
+    return NextResponse.json(course, { status: 201 });
+  } catch (error: any) {
+    console.error("COURSE_POST_ERROR", error);
+    const message =
+      error.meta?.cause || error.message || "Failed to create course";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

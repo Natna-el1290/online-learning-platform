@@ -31,6 +31,7 @@ export const metadata: Metadata = {
 };
 
 import { Toaster } from "@/components/ui/toaster";
+import { BookAIcon } from "lucide-react";
 
 export default function RootLayout({
   children,

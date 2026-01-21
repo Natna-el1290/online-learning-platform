@@ -4,7 +4,13 @@ import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BookOpen, Users, FileText, HelpCircle, GraduationCap } from "lucide-react";
+import {
+  BookOpen,
+  Users,
+  FileText,
+  HelpCircle,
+  GraduationCap,
+} from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 export default async function AdminDashboard() {
@@ -12,12 +18,13 @@ export default async function AdminDashboard() {
 
   if (!session || session.user.role !== "ADMIN") redirect("/login");
 
-  const [coursesCount, studentsCount, lessonsCount, quizzesCount] = await Promise.all([
-    prisma.course.count(),
-    prisma.user.count({ where: { role: "STUDENT" } }),
-    prisma.lesson.count(),
-    prisma.quiz.count(),
-  ]);
+  const [coursesCount, studentsCount, lessonsCount, quizzesCount] =
+    await Promise.all([
+      prisma.course.count(),
+      prisma.user.count({ where: { role: "STUDENT" } }),
+      prisma.lesson.count(),
+      prisma.quiz.count(),
+    ]);
 
   // Fetch recent data
   const [recentUsers, recentCourses, recentLessons] = await Promise.all([
@@ -25,47 +32,55 @@ export default async function AdminDashboard() {
       where: { role: "STUDENT" },
       orderBy: { createdAt: "desc" },
       take: 5,
-      select: { id: true, firstName: true, lastName: true, createdAt: true, email: true }
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        createdAt: true,
+        email: true,
+      },
     }),
     prisma.course.findMany({
       orderBy: { createdAt: "desc" },
       take: 5,
-      select: { id: true, title: true, createdAt: true }
+      select: { id: true, title: true, createdAt: true },
     }),
     prisma.lesson.findMany({
       orderBy: { createdAt: "desc" },
       include: { course: true },
       take: 5,
-    })
+    }),
   ]);
 
   // Combine and sort
   const activities = [
-    ...recentUsers.map(u => ({
+    ...recentUsers.map((u) => ({
       id: u.id,
       type: "USER",
       title: "New student registered",
       description: `${u.firstName || ""} ${u.lastName || ""} (${u.email}) joined`,
       date: u.createdAt,
-      icon: Users
+      icon: Users,
     })),
-    ...recentCourses.map(c => ({
+    ...recentCourses.map((c) => ({
       id: c.id,
       type: "COURSE",
       title: "Course created",
       description: `"${c.title}" was created`,
       date: c.createdAt,
-      icon: BookOpen
+      icon: BookOpen,
     })),
-    ...recentLessons.map(l => ({
+    ...recentLessons.map((l) => ({
       id: l.id,
       type: "LESSON",
       title: "New lesson added",
       description: `"${l.title}" added to ${l.course.title}`,
       date: l.createdAt,
-      icon: FileText
-    }))
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 5);
+      icon: FileText,
+    })),
+  ]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 5);
 
   return (
     <div className="p-6 md:p-8">
@@ -136,10 +151,15 @@ export default async function AdminDashboard() {
           <CardContent>
             <div className="space-y-4">
               {activities.length === 0 && (
-                <p className="text-muted-foreground text-center py-4">No recent activity.</p>
+                <p className="text-muted-foreground text-center py-4">
+                  No recent activity.
+                </p>
               )}
               {activities.map((activity, i) => (
-                <div key={i} className="flex items-center gap-4 p-3 rounded-lg bg-muted/50">
+                <div
+                  key={i}
+                  className="flex items-center gap-4 p-3 rounded-lg bg-muted/50"
+                >
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                     <activity.icon className="w-5 h-5 text-primary" />
                   </div>
@@ -150,7 +170,9 @@ export default async function AdminDashboard() {
                     </p>
                   </div>
                   <span className="text-sm text-muted-foreground whitespace-nowrap">
-                    {formatDistanceToNow(new Date(activity.date), { addSuffix: true })}
+                    {formatDistanceToNow(new Date(activity.date), {
+                      addSuffix: true,
+                    })}
                   </span>
                 </div>
               ))}

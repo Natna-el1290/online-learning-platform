@@ -1,26 +1,33 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { BookOpen, Trophy, Award, User, Home, LogOut } from "lucide-react"
-import { signOut } from "next-auth/react"
-import { cn } from "@/lib/utils"
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { BookOpen, Trophy, Award, User, Home, LogOut } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { cn } from "@/lib/utils";
 
 const navigation = [
   { name: "Dashboard", href: "/student-dashboard", icon: Home },
   { name: "My Courses", href: "/student-dashboard/courses", icon: BookOpen },
   { name: "Quizzes", href: "/student-dashboard/quizzes", icon: Trophy },
-  { name: "Certificates", href: "/student-dashboard/certificates", icon: Award },
+  {
+    name: "Certificates",
+    href: "/student-dashboard/certificates",
+    icon: Award,
+  },
   { name: "Profile", href: "/student-dashboard/profile", icon: User },
-]
+];
 
 export function StudentSidebar() {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   return (
     <aside className="w-64 border-r bg-card/50 h-screen sticky top-0 hidden md:flex md:flex-col">
       <div className="p-6 flex-1">
-        <Link href="/" className="flex items-center gap-2 font-semibold text-xl mb-8">
+        <Link
+          href="/student-dashboard"
+          className="flex items-center gap-2 font-semibold text-xl mb-8"
+        >
           <div className="bg-primary text-primary-foreground p-2 rounded-lg">
             <BookOpen className="w-5 h-5" />
           </div>
@@ -29,8 +36,8 @@ export function StudentSidebar() {
 
         <nav className="space-y-2">
           {navigation.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href
+            const Icon = item.icon;
+            const isActive = pathname === item.href;
             return (
               <Link
                 key={item.name}
@@ -45,7 +52,7 @@ export function StudentSidebar() {
                 <Icon className="w-5 h-5" />
                 <span>{item.name}</span>
               </Link>
-            )
+            );
           })}
         </nav>
       </div>
@@ -60,5 +67,5 @@ export function StudentSidebar() {
         </button>
       </div>
     </aside>
-  )
+  );
 }

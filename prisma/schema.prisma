@@ -1,6 +1,6 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "../lib/generated/prisma"
+  runtime  = "nodejs"
 }
 
 datasource db {
@@ -15,16 +15,21 @@ model User {
   emailVerified DateTime?
   password      String?
   image         String?
-  bio           String?
+  bio           String?       @db.Text
   role          UserRole      @default(STUDENT)
-  
+
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
-  accounts      Account[]
-  certificates  Certificate[]
-  enrollments   Enrollment[]
-  quizResults   QuizResult[]
-  sessions      Session[]
+
+  accounts              Account[]
+  certificates          Certificate[]
+  enrollments           Enrollment[]
+  quizResults           QuizResult[]
+  sessions              Session[]
+  cancellationRequests  CancellationRequest[]
+
+  @@index([email])
+  @@index([role])
 }
 
 model Account {
@@ -40,9 +45,11 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
+
   user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
@@ -50,23 +57,37 @@ model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
+
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expires])
 }
 
 model Course {
   id          String       @id @default(cuid())
   title       String
-  description String
+  description String       @db.Text
   image       String?
   category    String
-  level       String       @default("Beginner")
+  level       CourseLevel  @default(BEGINNER)
   instructor  String
   duration    String
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+
   enrollments Enrollment[]
   lessons     Lesson[]
   quizzes     Quiz[]
+
+  @@index([category])
+  @@index([level])
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
 }
 
 model Lesson {
@@ -74,14 +95,27 @@ model Lesson {
   title     String
   duration  String
   type      ContentType      @default(VIDEO)
-  content   String?
+  content   String?          @db.Text
   videoUrl  String?
+  imageUrl  String?
   pdfUrl    String?
   courseId  String
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
+
   course    Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
   progress  LessonProgress[]
+  quizzes   Quiz[]
+
+  @@index([courseId])
+}
+
+enum ContentType {
+  VIDEO
+  PDF
+  PPTX
+  IMAGE
+  QUIZ
 }
 
 model Quiz {
@@ -89,22 +123,58 @@ model Quiz {
   title          String
   totalQuestions Int
   courseId       String
+  lessonId       String?
   createdAt      DateTime     @default(now())
+
   course         Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lesson         Lesson?      @relation(fields: [lessonId], references: [id], onDelete: SetNull)
+  questions      Question[]
   results        QuizResult[]
+
+  @@index([courseId])
+  @@index([lessonId])
+  @@index([createdAt])
+}
+
+model Question {
+  id             String  @id @default(cuid())
+  questionText   String  @db.Text
+  optionA        String
+  optionB        String
+  optionC        String
+  optionD        String
+  correctAnswer  CorrectOption
+  quizId         String
+  points         Int     @default(1)
+  createdAt      DateTime @default(now())
+
+  quiz           Quiz    @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@index([quizId])
+}
+
+enum CorrectOption {
+  A
+  B
+  C
+  D
 }
 
 model Enrollment {
   id               String   @id @default(cuid())
   userId           String
   courseId         String
-  progressPercent  Int      @default(0)
+  progressPercent  Int      @default(0) @db.SmallInt
   completedLessons Int      @default(0)
   lastAccessed     DateTime @default(now())
+
   course           Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cancellationRequests CancellationRequest[]
 
   @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
 }
 
 model LessonProgress {
@@ -112,19 +182,32 @@ model LessonProgress {
   userId    String
   lessonId  String
   completed Boolean @default(false)
+
   lesson    Lesson  @relation(fields: [lessonId], references: [id], onDelete: Cascade)
 
   @@unique([userId, lessonId])
+  @@index([userId])
+  @@index([lessonId])
 }
 
 model QuizResult {
-  id     String   @id @default(cuid())
-  score  Int
-  userId String
-  quizId String
-  date   DateTime @default(now())
-  quiz   Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String   @id @default(cuid())
+  userId      String
+  quizId      String
+  score       Int
+  answers     Json?    // Recommended shape: [{ questionId: string, selected: "A"|"B"|"C"|"D", correct: "A"|"B"|"C"|"D", isCorrect: boolean }]
+  attemptNumber Int?   @default(1) // Optional: support multiple attempts
+  timeTaken   Int?          // seconds spent (optional)
+  date        DateTime @default(now())
+
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, quizId])          // ← Critical fix: enables upsert by user + quiz
+  @@index([userId])
+  @@index([quizId])
+  @@index([date])
+  @@index([attemptNumber])
 }
 
 model Certificate {
@@ -134,7 +217,26 @@ model Certificate {
   userId         String
   courseTitle    String
   instructorName String
+
   user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model CancellationRequest {
+  id           String       @id @default(cuid())
+  enrollmentId String
+  userId       String
+  status       CancelStatus @default(PENDING)
+  createdAt    DateTime     @default(now())
+  reason       String?      @db.Text
+
+  enrollment   Enrollment   @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([enrollmentId])
+  @@index([userId])
+  @@index([status])
 }
 
 enum UserRole {
@@ -142,10 +244,8 @@ enum UserRole {
   ADMIN
 }
 
-enum ContentType {
-  VIDEO
-  PDF
-  PPTX
-  IMAGE
+enum CancelStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
-

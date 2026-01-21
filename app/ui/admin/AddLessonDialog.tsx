@@ -42,6 +42,7 @@ const formSchema = z.object({
   type: z.enum(["VIDEO", "PDF", "PPTX", "IMAGE"]),
   content: z.string().optional().nullable(),
   videoUrl: z.string().optional().nullable(),
+  imageUrl: z.string().optional().nullable(),
   pdfUrl: z.string().optional().nullable(),
   courseId: z.string().min(1, "Select a course"),
 });
@@ -63,6 +64,7 @@ export function AddLessonDialog({
       type: "VIDEO",
       content: "",
       videoUrl: "",
+      imageUrl: "",
       pdfUrl: "",
       courseId: courses[0]?.id ?? "",
     },
@@ -299,13 +301,39 @@ export function AddLessonDialog({
 
             <FormField
               control={form.control}
+              name="imageUrl"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Image URL (Optional)</FormLabel>
+                  <FormControl>
+                    <Input {...field} value={field.value || ""} placeholder="https://example.com/image.jpg" />
+                  </FormControl>
+                  <FormDescription>
+                    Add an image to display in the lesson
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description / Content</FormLabel>
+                  <FormLabel>Lesson Content (HTML/Markdown)</FormLabel>
                   <FormControl>
-                    <Textarea {...field} value={field.value || ""} />
+                    <Textarea
+                      {...field}
+                      value={field.value || ""}
+                      rows={10}
+                      placeholder="Write your lesson content here. You can use HTML tags for formatting.&#10;&#10;Example:&#10;<h2>Introduction</h2>&#10;<p>This lesson covers...</p>&#10;<ul>&#10;  <li>Topic 1</li>&#10;  <li>Topic 2</li>&#10;</ul>"
+                      className="font-mono text-sm"
+                    />
                   </FormControl>
+                  <FormDescription>
+                    Write rich lesson content with HTML formatting
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

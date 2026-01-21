@@ -46,6 +46,7 @@ export async function POST(req: Request) {
         type: body.type ?? "VIDEO",
         content: body.content ?? null,
         videoUrl: body.videoUrl ?? null,
+        imageUrl: body.imageUrl ?? null,
         pdfUrl: body.pdfUrl ?? null,
         courseId: body.courseId,
       },

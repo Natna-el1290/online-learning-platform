@@ -46,9 +46,8 @@ const formSchema = z.object({
   image: z.string().optional().nullable(),
 });
 
-// We make the interface accept the broader Prisma type to stop the "yelling"
 interface EditCourseProps {
-  course: any; // Using any here to accept the full Prisma object with _count and Dates
+  course: any; // Keep any for flexibility with Prisma data
 }
 
 export function EditCourseDialog({ course }: EditCourseProps) {
@@ -58,31 +57,32 @@ export function EditCourseDialog({ course }: EditCourseProps) {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    // We map the values manually to ensure "level" is cast correctly
     defaultValues: {
-      title: course?.title || "",
-      description: course?.description || "",
-      category: course?.category || "",
+      title: course?.title ?? "",
+      description: course?.description ?? "",
+      category: course?.category ?? undefined, // ← key: undefined instead of ""
       level:
-        (course?.level as "Beginner" | "Intermediate" | "Advanced") ||
+        (course?.level as "Beginner" | "Intermediate" | "Advanced") ??
         "Beginner",
-      instructor: course?.instructor || "",
-      duration: course?.duration || "",
-      image: course?.image || null,
+      instructor: course?.instructor ?? "",
+      duration: course?.duration ?? "",
+      image: course?.image ?? null,
     },
   });
 
-  // Sync form when dialog opens or course changes
+  // Sync when dialog opens / course changes
   useEffect(() => {
-    if (course) {
+    if (open && course) {
       form.reset({
-        title: course.title,
-        description: course.description,
-        category: course.category,
-        level: course.level as "Beginner" | "Intermediate" | "Advanced",
-        instructor: course.instructor,
-        duration: course.duration,
-        image: course.image,
+        title: course.title ?? "",
+        description: course.description ?? "",
+        category: course.category ?? undefined, // ← avoid ""
+        level:
+          (course.level as "Beginner" | "Intermediate" | "Advanced") ??
+          "Beginner",
+        instructor: course.instructor ?? "",
+        duration: course.duration ?? "",
+        image: course.image ?? null,
       });
     }
   }, [course, form, open]);
@@ -96,25 +96,17 @@ export function EditCourseDialog({ course }: EditCourseProps) {
         body: JSON.stringify(values),
       });
 
-      if (response.ok) {
-        setOpen(false);
-        router.refresh();
-        toast({
-          title: "Course updated",
-          description: "Course details saved.",
-        });
-        return;
-      }
-      const err = await response.json().catch(() => null);
-      toast({
-        title: "Update failed",
-        description: err?.error || "Could not update course.",
-      });
+      if (!response.ok) throw new Error("Update failed");
+
+      setOpen(false);
+      router.refresh();
+      toast({ title: "Course updated", description: "Details saved." });
     } catch (error) {
       console.error("Failed to update course", error);
       toast({
-        title: "Network error",
-        description: "Failed to update course.",
+        title: "Error",
+        description: "Could not update course.",
+        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -128,12 +120,11 @@ export function EditCourseDialog({ course }: EditCourseProps) {
           <Pencil className="w-4 h-4" />
         </Button>
       </DialogTrigger>
+
       <DialogContent className="sm:max-w-[525px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Course</DialogTitle>
-          <DialogDescription>
-            Modify the details of the existing course.
-          </DialogDescription>
+          <DialogDescription>Modify course details.</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -175,11 +166,11 @@ export function EditCourseDialog({ course }: EditCourseProps) {
                     <FormLabel>Category</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      value={field.value} // Use 'value' instead of 'defaultValue' for controlled components
+                      value={field.value ?? undefined} // ← safe: undefined shows placeholder
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select" />
+                          <SelectValue placeholder="Select category" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -192,16 +183,20 @@ export function EditCourseDialog({ course }: EditCourseProps) {
                   </FormItem>
                 )}
               />
+
               <FormField
                 control={form.control}
                 name="level"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Level</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? undefined} // ← safe
+                    >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select Level" />
+                          <SelectValue placeholder="Select level" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

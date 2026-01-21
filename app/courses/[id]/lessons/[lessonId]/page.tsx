@@ -1,38 +1,48 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Navbar } from "@/components/navbar"
-import { Footer } from "@/components/footer"
-import { ChevronLeft, ChevronRight, Download, FileText } from "lucide-react"
-import Link from "next/link"
-import prisma from "@/lib/prisma"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
-import { redirect, notFound } from "next/navigation"
-import { LessonCompleteButton } from "@/components/lesson-complete-button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
+import { ChevronLeft, ChevronRight, Download, FileText } from "lucide-react";
+import Link from "next/link";
+import prisma from "@/lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect, notFound } from "next/navigation";
+import { LessonCompleteButton } from "@/components/lesson-complete-button";
 
-export default async function LessonPage({ params }: { params: { id: string; lessonId: string } }) {
+export default async function LessonPage({
+  params,
+}: {
+  params: { id: string; lessonId: string };
+}) {
   const session = await getServerSession(authOptions);
 
   if (!session) {
     redirect("/login");
   }
 
+  const { lessonId } = params;
+
+  if (!lessonId) {
+    notFound();
+  }
+
   // Fetch the current lesson
   const lesson = await prisma.lesson.findUnique({
-    where: { id: params.lessonId },
+    where: { id: lessonId },
     include: {
       course: {
         include: {
           lessons: {
             orderBy: { createdAt: "asc" },
-            select: { id: true, title: true } // Fetch partial for navigation
-          }
-        }
+            select: { id: true, title: true }, // Fetch partial for navigation
+          },
+        },
       },
       progress: {
-        where: { userId: session.user.id }
-      }
-    }
+        where: { userId: session.user.id },
+      },
+    },
   });
 
   if (!lesson) {
@@ -43,19 +53,21 @@ export default async function LessonPage({ params }: { params: { id: string; les
   const allLessons = lesson.course.lessons;
   const currentIndex = allLessons.findIndex((l) => l.id === lesson.id);
   const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
-  const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
+  const nextLesson =
+    currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
 
   // Check completion status
-  const isCompleted = lesson.progress.length > 0 && lesson.progress[0].completed;
+  const isCompleted =
+    lesson.progress.length > 0 && lesson.progress[0].completed;
 
   // Get total course progress
   const enrollment = await prisma.enrollment.findUnique({
     where: {
       userId_courseId: {
         userId: session.user.id,
-        courseId: lesson.courseId
-      }
-    }
+        courseId: lesson.courseId,
+      },
+    },
   });
 
   const progressPercent = enrollment?.progressPercent || 0;
@@ -88,7 +100,7 @@ export default async function LessonPage({ params }: { params: { id: string; les
             </div>
 
             {/* Video Section if applicable */}
-            {(lesson.type === 'VIDEO' && lesson.videoUrl) && (
+            {lesson.type === "VIDEO" && lesson.videoUrl && (
               <Card>
                 <CardContent className="p-0">
                   <div className="aspect-video bg-black rounded-t-lg">
@@ -104,31 +116,54 @@ export default async function LessonPage({ params }: { params: { id: string; les
               </Card>
             )}
 
-            {/* Text Content */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Lesson Overview</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="prose prose-sm max-w-none">
-                  {lesson.content ? (
-                    <p className="whitespace-pre-line leading-relaxed text-muted-foreground">{lesson.content}</p>
-                  ) : (
-                    <p className="text-muted-foreground">No description available.</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+            {/* Image Section if applicable */}
+            {lesson.imageUrl && (
+              <Card>
+                <CardContent className="p-0">
+                  <div className="rounded-lg overflow-hidden">
+                    <img
+                      src={lesson.imageUrl}
+                      alt={lesson.title}
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Lesson Content */}
+            {lesson.content && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Lesson Content</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div
+                    className="prose prose-sm max-w-none dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: lesson.content }}
+                  />
+                </CardContent>
+              </Card>
+            )}
 
             {/* Downloadable Resources */}
-            {(lesson.pdfUrl) && (
+            {lesson.pdfUrl && (
               <Card>
                 <CardHeader>
                   <CardTitle>Resources</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <Button variant="outline" className="w-full sm:w-auto bg-transparent" asChild>
-                    <a href={lesson.pdfUrl} download target="_blank" rel="noopener noreferrer">
+                  <Button
+                    variant="outline"
+                    className="w-full sm:w-auto bg-transparent"
+                    asChild
+                  >
+                    <a
+                      href={lesson.pdfUrl}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       <FileText className="w-4 h-4 mr-2" />
                       Download Materials
                       <Download className="w-4 h-4 ml-2" />
@@ -150,7 +185,9 @@ export default async function LessonPage({ params }: { params: { id: string; les
               <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
                 {prevLesson ? (
                   <Button variant="ghost" asChild>
-                    <Link href={`/courses/${lesson.courseId}/lessons/${prevLesson.id}`}>
+                    <Link
+                      href={`/courses/${lesson.courseId}/lessons/${prevLesson.id}`}
+                    >
                       <ChevronLeft className="w-4 h-4 mr-2" />
                       Previous
                     </Link>
@@ -164,7 +201,9 @@ export default async function LessonPage({ params }: { params: { id: string; les
 
                 {nextLesson ? (
                   <Button asChild>
-                    <Link href={`/courses/${lesson.courseId}/lessons/${nextLesson.id}`}>
+                    <Link
+                      href={`/courses/${lesson.courseId}/lessons/${nextLesson.id}`}
+                    >
                       Next
                       <ChevronRight className="w-4 h-4 ml-2" />
                     </Link>
@@ -200,16 +239,20 @@ export default async function LessonPage({ params }: { params: { id: string; les
                     </div>
                   </div>
                   <div className="pt-4 border-t space-y-2">
-                    <p className="text-sm font-medium mb-2">Lessons in this course</p>
+                    <p className="text-sm font-medium mb-2">
+                      Lessons in this course
+                    </p>
                     <div className="space-y-1 max-h-[300px] overflow-y-auto pr-2">
                       {allLessons.map((l, index) => (
                         <Link
                           key={l.id}
                           href={`/courses/${lesson.courseId}/lessons/${l.id}`}
-                          className={`block p-2 rounded text-sm transition-colors ${l.id === lesson.id ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-accent text-muted-foreground'}`}
+                          className={`block p-2 rounded text-sm transition-colors ${l.id === lesson.id ? "bg-primary/10 text-primary font-medium" : "hover:bg-accent text-muted-foreground"}`}
                         >
                           <div className="flex items-center gap-2">
-                            <span className="text-xs opacity-50">{index + 1}.</span>
+                            <span className="text-xs opacity-50">
+                              {index + 1}.
+                            </span>
                             <span className="truncate">{l.title}</span>
                           </div>
                         </Link>
@@ -218,7 +261,9 @@ export default async function LessonPage({ params }: { params: { id: string; les
 
                     <div className="pt-4">
                       <Button className="w-full" variant="secondary" asChild>
-                        <Link href={`/courses/${lesson.courseId}`}>Course Overview</Link>
+                        <Link href={`/courses/${lesson.courseId}`}>
+                          Course Overview
+                        </Link>
                       </Button>
                     </div>
                   </div>
@@ -231,6 +276,5 @@ export default async function LessonPage({ params }: { params: { id: string; les
 
       <Footer />
     </div>
-  )
+  );
 }
-

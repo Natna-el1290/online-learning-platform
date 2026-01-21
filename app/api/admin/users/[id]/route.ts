@@ -5,16 +5,14 @@ import prisma from "@/lib/prisma";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id: userId } = await params;
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "ADMIN")
     return new NextResponse("Forbidden", { status: 403 });
 
   try {
-    const resolvedParams =
-      typeof (params as any)?.then === "function" ? await params : params;
-    const userId = resolvedParams.id;
     const body = await req.json();
 
     // Allow updating basic fields like firstName, lastName, role
@@ -33,17 +31,14 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id: userId } = await params;
   const session = await getServerSession(authOptions);
   if (!session || session.user.role !== "ADMIN")
     return new NextResponse("Forbidden", { status: 403 });
 
   try {
-    const resolvedParams =
-      typeof (params as any)?.then === "function" ? await params : params;
-    const userId = resolvedParams.id;
-
     await prisma.user.delete({ where: { id: userId } });
     return new NextResponse("User deleted", { status: 200 });
   } catch (err) {

@@ -5,8 +5,9 @@ import prisma from "@/lib/prisma";
 
 export async function PATCH(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id: courseId } = await params;
   const session = await getServerSession(authOptions);
 
   // Security check
@@ -24,11 +25,7 @@ export async function PATCH(
       );
     }
 
-    // `params` can be a Promise in some Next.js runtimes — resolve defensively
-    const resolvedParams =
-      typeof (params as any)?.then === "function" ? await params : params;
-    const courseId = resolvedParams.id;
-
+    // const body already read above
     const updated = await prisma.course.update({
       where: { id: courseId },
       data: {
@@ -54,8 +51,9 @@ export async function PATCH(
 
 export async function DELETE(
   req: Request,
-  { params }: { params: { id: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
+  const { id: courseId } = await params;
   const session = await getServerSession(authOptions);
 
   if (!session || session.user.role !== "ADMIN") {
@@ -63,10 +61,6 @@ export async function DELETE(
   }
 
   try {
-    const resolvedParams =
-      typeof (params as any)?.then === "function" ? await params : params;
-    const courseId = resolvedParams.id;
-
     // Use a transaction to delete dependencies first.
     await prisma.$transaction([
       prisma.lesson.deleteMany({ where: { courseId } }),
@@ -79,7 +73,9 @@ export async function DELETE(
   } catch (error) {
     console.error("DELETE_ERROR", error);
     return NextResponse.json(
-      { error: "Failed to delete course. Ensure all dependencies are handled." },
+      {
+        error: "Failed to delete course. Ensure all dependencies are handled.",
+      },
       { status: 500 },
     );
   }
