@@ -11,7 +11,8 @@ export default withAuth(
       !!req.cookies.get("next-auth.session-token") ||
       !!req.cookies.get("__Secure-next-auth.session-token");
 
-    const isAuthRoute = pathname.startsWith("/login") || pathname.startsWith("/signup");
+    const isAuthRoute =
+      pathname.startsWith("/login") || pathname.startsWith("/signup");
 
     // 1. If user is authenticated and tries to access login/signup, redirect them
     if (isAuthRoute) {
@@ -24,8 +25,8 @@ export default withAuth(
           return NextResponse.redirect(new URL("/student-dashboard", req.url));
         }
       }
-      // If has cookie but no token yet, let it pass (or wait), usually it resolves quickly. 
-      // If we redirect here without token, we might not know the role. 
+      // If has cookie but no token yet, let it pass (or wait), usually it resolves quickly.
+      // If we redirect here without token, we might not know the role.
       // But if we let them view login, it might be confusing.
       // For now, if no token, we let them see the page, client side will redirect if needed (Login page has check).
       return NextResponse.next();
@@ -36,7 +37,12 @@ export default withAuth(
     // withAuth wrapper usually handles the "if (!token) redirect to login" for us if `authorized` callback returns false.
     // But here `authorized` maps to true, so we handle it manually.
 
-    if (!token && !hasSessionCookie && !isAuthRoute && !pathname.startsWith("/api/auth")) {
+    if (
+      !token &&
+      !hasSessionCookie &&
+      !isAuthRoute &&
+      !pathname.startsWith("/api/auth")
+    ) {
       // This block currently only triggers on matched routes (admin/student dashboard)
       const loginUrl = new URL("/login", req.url);
       loginUrl.searchParams.set("callbackUrl", pathname);
@@ -63,7 +69,7 @@ export default withAuth(
     callbacks: {
       authorized: ({ token }) => true, // We handle redirection in the middleware function
     },
-  }
+  },
 );
 
 export const config = {
