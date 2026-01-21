@@ -25,8 +25,36 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const validateEmail = (email) => {
+    return String(email)
+      .toLowerCase()
+      .match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      );
+  };
+
   const handleCredentialsLogin = async (e) => {
     e.preventDefault();
+
+    // Client-side validation
+    if (!validateEmail(email)) {
+      toast({
+        title: "Invalid input",
+        description: "Please enter a valid email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Invalid input",
+        description: "Password must be at least 6 characters.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const result = await signIn("credentials", {
@@ -37,8 +65,8 @@ export default function LoginPage() {
 
       if (result?.error) {
         toast({
-          title: "Login failed",
-          description: "Invalid credentials",
+          title: "Authentication Failed",
+          description: "Incorrect credentials. Please try again.",
           variant: "destructive",
         });
         setIsLoading(false);
