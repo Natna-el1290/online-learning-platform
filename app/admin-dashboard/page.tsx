@@ -10,9 +10,8 @@ export default async function AdminDashboard() {
   const session = await getServerSession(authOptions);
   console.log("Admin Dashboard Session:", session);
 
-  // If no session or user is not admin, redirect
   if (!session || session.user.role !== "ADMIN") {
-    redirect("/login"); // or "/student-dashboard"
+    redirect("/login"); 
   }
   return (
     <div className="flex min-h-screen">
@@ -21,7 +20,8 @@ export default async function AdminDashboard() {
       <main className="flex-1 p-6 md:p-8">
         <div className="max-w-7xl mx-auto space-y-8">
           <div>
-            <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
+            <h1 className="text-3xl font-bold mb-">Admin Dashboard</h1>
+            <h1 className="text-[8px] font-medium mb-2">Welcome Admin</h1>
             <p className="text-muted-foreground">
               Manage your e-learning platform
             </p>

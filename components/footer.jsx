@@ -75,6 +75,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                {/* coming soon features */}
                 <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                   Careers
                 </Link>
@@ -91,6 +92,7 @@ export function Footer() {
           <div>
             <h3 className="font-semibold mb-4">Support</h3>
             <ul className="space-y-2 text-sm">
+              {/* not neccessary in a prototype */}
               <li>
                 <Link href="#" className="text-muted-foreground hover:text-primary transition-colors">
                   Help Center

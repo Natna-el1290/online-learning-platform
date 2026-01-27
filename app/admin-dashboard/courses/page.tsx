@@ -5,6 +5,7 @@ import { Plus, Pencil, Trash2 } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
 export default function AdminCoursesPage() {
+  // static course files for the prototype
   const courses = [
     {
       id: 1,
@@ -45,11 +46,11 @@ export default function AdminCoursesPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2">Manage Courses</h1>
-              <p className="text-muted-foreground">Create, edit, and manage your course catalog</p>
+              <p className="text-muted-foreground">Create, edit, and manage your course catalog </p>
             </div>
             <Button>
               <Plus className="w-4 h-4 mr-2" />
-              Add Course
+              Add A Course
             </Button>
           </div>
 

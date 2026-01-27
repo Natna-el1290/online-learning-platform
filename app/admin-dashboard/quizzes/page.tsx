@@ -11,7 +11,7 @@ export default function AdminQuizzesPage() {
       title: "HTML & CSS Basics Quiz",
       course: "Web Development Fundamentals",
       questions: 10,
-      passingScore: 70,
+      passingScore: 75,
     },
     {
       id: 2,
@@ -25,14 +25,14 @@ export default function AdminQuizzesPage() {
       title: "Python Data Structures",
       course: "Data Science with Python",
       questions: 12,
-      passingScore: 70,
+      passingScore: 75,
     },
     {
       id: 4,
       title: "Social Media Marketing",
       course: "Digital Marketing Mastery",
       questions: 8,
-      passingScore: 65,
+      passingScore: 75,
     },
   ]
 
